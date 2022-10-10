@@ -21,6 +21,12 @@ $ wget https://gitlab.com/api/v4/projects/33695681/packages/generic/nrich/latest
 $ sudo dpkg -i nrich_latest_amd64.deb
 ```
 
+For MacOS, install from tap repository with **homebrew**
+```shell
+$ brew tap shodan-public/homebrew-nrich https://gitlab.com/shodan-public/homebrew-nrich
+$ brew install nrich
+```
+
 To confirm that it's working you can pipe an IP to the command. For example:
 
 ```shell
