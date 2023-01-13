@@ -14,7 +14,7 @@ repository = "https://gitlab.com/shodan-public/nrich"
 [dependencies]
 colored = "2.0.0"
 futures = "0.3.25"
-reqwest = { version = "0.11.13", features = ["brotli", "json", "rustls-tls", "socks"] }
+reqwest = { version = "0.11.13", default-features = false, features = ["brotli", "json", "rustls-tls", "socks"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 structopt = "0.3.26"
