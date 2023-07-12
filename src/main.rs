@@ -9,6 +9,8 @@ use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::IpAddr;
+use std::sync::Arc;
+use std::sync::Mutex;
 use structopt::StructOpt;
 
 const CONCURRENCY: usize = 10;
@@ -111,6 +113,9 @@ async fn main() {
         })
         .buffer_unordered(CONCURRENCY);
 
+    // Shared state between tokio tasks
+    let counter = Arc::new(Mutex::new(0));
+
     // On Windows we need to enable the virtual terminal so colors show up
     #[cfg(windows)]
     let _ = colored::control::set_virtual_terminal(true);
@@ -124,12 +129,24 @@ async fn main() {
         .for_each(|result| async {
             // We got some information from InternetDB
             if let Ok(host) = result {
+                let mut counter_lock = counter.lock().unwrap();
+
                 if args.output == "ndjson" {
                     // Newline Delimited JSON
                     println!("{}", serde_json::to_string(&host).unwrap());
                 } else if args.output == "json" {
-                    println!("{},", serde_json::to_string(&host).unwrap());
+                    // Break and append newline from second item
+                    if *counter_lock == 0 {
+                        print!("{}", serde_json::to_string(&host).unwrap());
+                    } else {
+                        print!(",\n{}", serde_json::to_string(&host).unwrap());
+                    }
                 } else {
+                    // Skip to add newline after last item
+                    if *counter_lock > 0 {
+                        println!();
+                    }
+
                     // Terminal output should look something like this
                     //
                     // 1.1.1.1 (one.one.one.one)
@@ -181,9 +198,9 @@ async fn main() {
                                 .join(", ")
                         );
                     }
-
-                    println!();
                 }
+
+                *counter_lock += 1;
             }
         })
         .await;
@@ -191,7 +208,7 @@ async fn main() {
     if args.output == "json" {
         // The current output ends in a "," so we need to add an empty JSON object
         // before we close the array otherwise it won't be valid JSON.
-        println!("{{}}");
+        println!();
         println!("]");
     }
 }
