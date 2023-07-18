@@ -212,3 +212,58 @@ async fn main() {
         println!("]");
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::Command;
+    use serde_json::Value;
+    use std::fs::File;
+    use std::io::prelude::Write;
+
+    #[test]
+    fn valid_query() -> std::io::Result<()> {
+        let mut cmd = Command::cargo_bin("nrich").unwrap();
+        let output = cmd.write_stdin("8.8.8.8").arg("-").unwrap();
+        let output_str = String::from_utf8(output.stdout).unwrap();
+
+        assert!(output_str.contains("8.8.8.8 (dns.google)"));
+        assert!(output_str.contains("Ports: 53, 443"));
+
+        // Create file hold list of IPs (invalid IP will be skipped)
+        let path = "/tmp/ips.txt";
+        let mut file = File::create(path)?;
+        file.write_all(b"8.8.8.8\n1.1.1.1\ninvalid-ip")?;
+
+        cmd = Command::cargo_bin("nrich").unwrap();
+        let output = cmd.arg(path).arg("--output").arg("json").unwrap();
+        let output_str = String::from_utf8(output.stdout).unwrap();
+
+        let output_json = serde_json::from_str::<Value>(&output_str);
+        assert!(output_json.is_ok());
+
+        let value = output_json.unwrap();
+        assert!(value[0]["hostnames"].is_array());
+        assert!(value[1]["vulns"].is_array());
+
+        Ok(())
+    }
+
+    #[test]
+    fn invalid_ip() {
+        let mut cmd = Command::cargo_bin("nrich").unwrap();
+        let output = cmd.write_stdin("8.8.8").arg("-").unwrap();
+        // This tool only lookup valid IP so it's return nothing
+        assert_eq!(String::from_utf8(output.stdout).unwrap(), "");
+    }
+
+    #[test]
+    #[should_panic(expected = "No such file or directory")]
+    fn not_found_file() {
+        Command::cargo_bin("nrich")
+            .unwrap()
+            .arg("/tmp/not-found-file")
+            .arg("--output")
+            .arg("ndjson")
+            .unwrap();
+    }
+}
