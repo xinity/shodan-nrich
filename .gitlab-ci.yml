@@ -8,7 +8,7 @@ variables:
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/nrich/${CI_COMMIT_TAG}"
   PACKAGE_LATEST_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/nrich/latest"
 
-build_rust_cross:
+build-cross-image:
     stage: build
     image: docker:git
     services:
@@ -21,14 +21,16 @@ build_rust_cross:
 
 test:
   stage: test
-  image: registry.gitlab.com/${CI_PROJECT_NAMESPACE}/geonet-rs/rust-cross:latest
+  image: registry.gitlab.com/${CI_PROJECT_NAMESPACE}/geonet-rs/rust-cross:latest  # Reuse geonet-rs cross image
   script:
+    - rustup component add rustfmt
+    - cargo fmt --all -- --check
     - cargo build
-    - cargo test --verbose
+    - cargo test -- --nocapture
 
 build:
   stage: build
-  image: registry.gitlab.com/shodan-public/geonet-rs/rust-cross:latest  # Reuse geonet-rs cross image
+  image: registry.gitlab.com/shodan-public/geonet-rs/rust-cross:latest
   script:
     - apt update
     - apt install -y upx-ucl rpm
