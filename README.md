@@ -17,13 +17,13 @@ A command-line tool to quickly analyze all IPs in a file and see which ones have
 Grab the [latest release](https://gitlab.com/shodan-public/nrich/-/releases) for your operating system. For example, to install the ``nrich`` command in Ubuntu:
 
 ```shell
-$ wget https://gitlab.com/api/v4/projects/33695681/packages/generic/nrich/latest/nrich_latest_amd64.deb
-$ sudo dpkg -i nrich_latest_amd64.deb
+$ wget https://gitlab.com/api/v4/projects/33695681/packages/generic/nrich/latest/nrich_latest_x86_64.deb
+$ sudo dpkg -i nrich_latest_x86_64.deb
 ```
 
 For MacOS, install from tap repository with **homebrew**
 ```shell
-$ brew tap shodan-public/homebrew-nrich https://gitlab.com/shodan-public/homebrew-nrich
+$ brew tap shodan-public/homebrew-shodan https://gitlab.com/shodan-public/homebrew-shodan
 $ brew install nrich
 ```
 
