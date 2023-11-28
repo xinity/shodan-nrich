@@ -31,9 +31,11 @@ test:
 build:
   stage: build
   image: registry.gitlab.com/shodan-public/geonet-rs/rust-cross:latest
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
     - apt update
-    - apt install -y upx-ucl rpm
+    - apt install rpm -y
     - cargo install cargo-deb cargo-rpm
     - cargo build --release
     - cargo build --target x86_64-pc-windows-gnu --release
@@ -41,16 +43,14 @@ build:
     - CC=oa64-clang cargo build --target aarch64-apple-darwin --release
     - mkdir bin
     - strip target/release/nrich
-    - upx target/release/nrich
     - mv target/release/nrich bin/nrich-${CI_COMMIT_TAG}-linux-amd64
     - mv target/x86_64-pc-windows-gnu/release/nrich.exe bin/nrich-${CI_COMMIT_TAG}-windows-amd64.exe
-    - mv target/x86_64-apple-darwin/release/nrich bin/nrich-${CI_COMMIT_TAG}-darwin-amd64   # upx on Linux failed to compress darwin file
+    - mv target/x86_64-apple-darwin/release/nrich bin/nrich-${CI_COMMIT_TAG}-darwin-amd64
     - mv target/aarch64-apple-darwin/release/nrich bin/nrich-${CI_COMMIT_TAG}-darwin-arm64
     - cargo deb
     - mv target/debian/nrich*.deb bin/nrich_${CI_COMMIT_TAG}_amd64.deb
     - cargo rpm build
     - mv target/release/rpmbuild/RPMS/x86_64/nrich*.rpm bin/nrich_${CI_COMMIT_TAG}_amd64.rpm
-    # Only create tar file for homebrew package
     - cd bin  # Skip preserve folder structure in tar file
     - tar cvzf nrich_${CI_COMMIT_TAG}_darwin_amd64.tar.gz *-${CI_COMMIT_TAG}-darwin-amd64
     - tar cvzf nrich_${CI_COMMIT_TAG}_darwin_arm64.tar.gz *-${CI_COMMIT_TAG}-darwin-arm64
@@ -60,8 +60,6 @@ build:
   artifacts:
     paths:
       - bin
-  rules:
-    - if: $CI_COMMIT_TAG
 
 upload:
   stage: upload
