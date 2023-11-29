@@ -95,7 +95,7 @@ homebrew:
   script:
     - x86_64_sha=`sha256sum bin/nrich_${CI_COMMIT_TAG}_darwin_x86_64.tar.gz | awk '{ print $1 }'`
     - arm64_sha=`sha256sum bin/nrich_${CI_COMMIT_TAG}_darwin_arm64.tar.gz | awk '{ print $1 }'`
-    - git clone $TAP_REPOSITORY_URL && cd homebrew-nrich
+    - git clone $TAP_REPOSITORY_URL && cd homebrew-shodan
     # Update two brew package checksums
     - sed -i "s/sha256 \".*\"/sha256 \"$x86_64_sha\"/1" Formula/nrich.rb
     - sed -i -z "s/sha256 \".*\"/sha256 \"$arm64_sha\"/m2" Formula/nrich.rb
