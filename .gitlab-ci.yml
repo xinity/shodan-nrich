@@ -34,9 +34,7 @@ build:
   rules:
     - if: $CI_COMMIT_TAG
   script:
-    - apt update
-    - apt install rpm -y
-    - cargo install cargo-deb cargo-rpm
+    - cargo install cargo-deb cargo-generate-rpm cargo-zigbuild
     - cargo build --release
     - cargo build --target x86_64-pc-windows-gnu --release
     - CC=o64-clang cargo build --target x86_64-apple-darwin --release
@@ -49,8 +47,10 @@ build:
     - mv target/aarch64-apple-darwin/release/nrich bin/nrich-${CI_COMMIT_TAG}-darwin-arm64
     - cargo deb
     - mv target/debian/nrich*.deb bin/nrich_${CI_COMMIT_TAG}_x86_64.deb
-    - cargo rpm build
-    - mv target/release/rpmbuild/RPMS/x86_64/nrich*.rpm bin/nrich_${CI_COMMIT_TAG}_x86_64.rpm
+    - cargo zigbuild --target x86_64-unknown-linux-musl --release
+    - strip target/x86_64-unknown-linux-musl/release/nrich
+    - cargo generate-rpm --target x86_64-unknown-linux-musl --auto-req disabled
+    - mv target/generate-rpm/nrich*.rpm bin/nrich_${CI_COMMIT_TAG}_x86_64.rpm
     - cd bin  # Skip preserve folder structure in tar file
     - tar cvzf nrich_${CI_COMMIT_TAG}_darwin_x86_64.tar.gz *-${CI_COMMIT_TAG}-darwin-x86_64
     - tar cvzf nrich_${CI_COMMIT_TAG}_darwin_arm64.tar.gz *-${CI_COMMIT_TAG}-darwin-arm64

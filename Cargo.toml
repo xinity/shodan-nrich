@@ -31,11 +31,7 @@ panic = "abort"
 [dev-dependencies]
 assert_cmd = "=2.0.10"
 
-[package.metadata.rpm]
-package = "nrich"
-
-[package.metadata.rpm.cargo]
-buildflags = ["--release"]
-
-[package.metadata.rpm.targets]
-nrich = { path = "/usr/bin/nrich" }
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/x86_64-unknown-linux-musl/release/nrich", dest = "/usr/bin/nrich", mode = "755" },
+]
